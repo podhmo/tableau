@@ -5,14 +5,19 @@ from tableau.utils import string_container_from_value, is_iterable_container
 from sqlalchemy.orm.properties import RelationshipProperty
 from types import FunctionType
 from warnings import warn
+from weakref import WeakKeyDictionary
+
+mixin_class_registry = WeakKeyDictionary()
+
+def cleanup():
+    for declarative, sadatum_class in mixin_class_registry.items():
+        del sadatum_class._decl_class_registry[sadatum_class.__name__]
 
 def newSADatum(metadata, base=None):
     table_to_declarative = {}
     if base is not None:
         for class_name, declarative in base._decl_class_registry.items():
             table_to_declarative[declarative.__table__.name] = declarative
-
-    mixin_class_registry = {}
 
     def is_declarative(cls):
         for base in cls.__mro__:
@@ -35,7 +40,7 @@ def newSADatum(metadata, base=None):
         @classmethod
         def _tableau_lookup_mixin_class(cls, declarative):
             class_name = "SADatum#%s" % declarative.__name__
-            retval = mixin_class_registry.get(class_name)
+            retval = mixin_class_registry.get(declarative)
             if retval is None:
                 retval = type(class_name, (cls, declarative), {
                     '_tableau_declarative': declarative,
@@ -46,7 +51,7 @@ def newSADatum(metadata, base=None):
                     # as its base
                     if isinstance(prop, RelationshipProperty):
                         prop._dependency_processor.enable_typechecks = False
-                mixin_class_registry[class_name] = retval
+                mixin_class_registry[declarative] = retval
             return retval
 
         def __new__(cls, schema, id_fields=None, **fields):
@@ -69,6 +74,7 @@ def newSADatum(metadata, base=None):
                     raise ValueError("declarative class for %s is not in the class registry" % schema)
 
             if declarative is not None:
+                assert not isinstance(declarative, SADatum)
                 _cls = cls._tableau_lookup_mixin_class(declarative)
             else:
                 _cls = cls

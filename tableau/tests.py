@@ -415,3 +415,31 @@ class SADatumTest(TestCase):
         self.assertEqual(table, datum2._tableau_table)
         self.assertEqual('test', datum2.field)
 
+    def testReentrance(self):
+        from tableau.sqla import cleanup
+        import warnings
+
+        class Test(self.declarative_base):
+            __tablename__ = 'Test'
+            id = Column(Integer, primary_key=True)
+            field = Column(String)
+        SADatum = newSADatum(self.metadata, self.declarative_base)
+        datum1 = SADatum(
+            'Test',
+            'id'
+            )
+        cleanup()
+        prev_filters = list(warnings.filters)
+        prev_showwarning = warnings.showwarning
+        warnings.filters = []
+        def choke_me(*args, **kwargs):
+            self.fail()
+        warnings.showwarning = choke_me
+
+        SADatum = newSADatum(self.metadata, self.declarative_base)
+        datum1 = SADatum(
+            'Test',
+            'id'
+            )
+        warnings.filters = prev_filters
+        warnings.showwarning = prev_showwarning
