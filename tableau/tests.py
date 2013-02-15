@@ -458,3 +458,22 @@ class SADatumTest(TestCase):
         self.assertEqual('Test', datum1._tableau_schema)
         self.assertEqual(table, datum1._tableau_table)
         self.assertEqual('foo', datum1.field)
+
+    def testWithBidirectionalRelationship(self):
+        class Left(self.declarative_base):
+            __tablename__ = "left"
+            id = Column(Integer, primary_key=True)
+            field = Column(String)
+            right_id = Column(Integer, ForeignKey("right.id"))
+            right = relationship("Right", backref="left", uselist=False)
+        class Right(self.declarative_base):
+            __tablename__ = "right"
+            id = Column(Integer, primary_key=True)
+            field = Column(String)
+
+        SADatum = self.SADatum = newSADatum(self.metadata)
+        left = SADatum(
+            'left',
+            'id'
+            )
+
