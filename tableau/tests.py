@@ -9,6 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker, relationship
 
+from unittest import skip
+
 class DataSetTest(TestCase):
     def setUp(self):
         self.SADatum = None
@@ -29,7 +31,7 @@ class DataSetTest(TestCase):
 
     def testOneToMany1(self):
         a = Datum(
-            'Schema',
+           'Schema',
             'id',
             id=1,
             items=one_to_many(
@@ -149,7 +151,6 @@ class DataSetTest(TestCase):
                 None
                 )
             )
-
         suite = DataSuite()
         DataWalker(suite)(a)
         self.assertEqual(None, a._tableau_fields['parent'].render())
@@ -174,6 +175,7 @@ class DataSetTest(TestCase):
         DataWalker(suite)(a)
         self.assertEqual(1, a._tableau_fields['parent'].render())
 
+
 class SADatumTest(TestCase):
     def assertIsInstance(self, a, klasses, msg=None):
         self.assertTrue(isinstance(a, klasses), msg)
@@ -188,7 +190,7 @@ class SADatumTest(TestCase):
             self.SADatum.cleanup()
         del self.declarative_base
         del self.metadata
-
+    
     def testPrimaryKey1(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True)
@@ -202,7 +204,7 @@ class SADatumTest(TestCase):
             self.fail("No expection raised")
         except ValueError, e:
             self.assertEqual("id_fields does not match to the table definition ([oops] != [id])", e.args[0])
-
+    
     def testPrimaryKey2(self):
         table = Table('Test', self.metadata,
             Column('id1', Integer, primary_key=True),
@@ -217,7 +219,7 @@ class SADatumTest(TestCase):
             self.fail("No expection raised")
         except ValueError, e:
             self.assertEqual("id_fields does not match to the table definition ([id1] != [id1,id2])", e.args[0])
-
+    
     def testPrimaryKey3(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True)
@@ -231,7 +233,7 @@ class SADatumTest(TestCase):
             self.fail("No expection raised")
         except ValueError, e:
             self.assertEqual("id_fields does not match to the table definition ([id1,id2] != [id])", e.args[0])
-
+    
     def testPrimaryKey4(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True)
@@ -239,7 +241,7 @@ class SADatumTest(TestCase):
         SADatum = self.SADatum = newSADatum(self.metadata)
         datum = SADatum('Test')
         self.assertEqual(('id', ), datum._tableau_id_fields)
-
+    
     def testWithSchemaOnly1(self):
         SADatum = self.SADatum = newSADatum(self.metadata)
         try:
@@ -251,7 +253,7 @@ class SADatumTest(TestCase):
             self.fail("No expection raised")
         except ValueError, e:
             self.assertEqual("Test is not defined in the metadata", e.args[0])
-
+    
     def testWithSchemaOnly2(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True),
@@ -265,7 +267,7 @@ class SADatumTest(TestCase):
             )
         self.assertEqual('Test', datum._tableau_schema)
         self.assertEqual(table, datum._tableau_table)
-
+    
     def testWithSchemaOnly3(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True),
@@ -279,7 +281,7 @@ class SADatumTest(TestCase):
             )
         self.assertEqual('Test', datum._tableau_schema)
         self.assertEqual(table, datum._tableau_table)
-
+    
     def testAuxPropertyWithSchemaOnly(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True),
@@ -293,7 +295,7 @@ class SADatumTest(TestCase):
             )
         datum._aux = 1
         self.assertEqual(1, datum._aux)
-
+    
     def testWithDeclarative1(self):
         class Test(self.declarative_base):
             __tablename__ = 'Oops'
@@ -337,7 +339,7 @@ class SADatumTest(TestCase):
             )
         datum._aux = 1
         self.assertEqual(1, datum._aux)
-
+    
     def testIfDeclarativeIsWalkable(self):
         class Test(self.declarative_base):
             __tablename__ = 'Test'
@@ -355,7 +357,7 @@ class SADatumTest(TestCase):
         suite = DataSuite()
         DataWalker(suite)(datum)
         self.assertEqual(1, datum.id)
-
+    
     def testIfDeclarativeIsAddableToSession(self):
         class Foo(self.declarative_base):
             __tablename__ = 'Foo'
@@ -407,7 +409,7 @@ class SADatumTest(TestCase):
         self.assertEqual(1, datum.id)
         self.assertEqual(1, datum.bars[0].id)
         self.assertEqual(2, datum.bars[1].id)
-
+    
     def testDefaultValue(self):
         table = Table('Test', self.metadata,
             Column('id', Integer, primary_key=True),
@@ -429,7 +431,7 @@ class SADatumTest(TestCase):
         self.assertEqual('Test', datum2._tableau_schema)
         self.assertEqual(table, datum2._tableau_table)
         self.assertEqual('test', datum2.field)
-
+    
     def testReentrance(self):
         class Test(self.declarative_base):
             __tablename__ = 'Test'
@@ -442,8 +444,7 @@ class SADatumTest(TestCase):
             )
         SADatum.cleanup()
 
-        SADatum = self.SADatum = newSADatum(self.metadata)
-
+    
     def testTablenameAndClassnameIsNotSame(self):
         class Test(self.declarative_base):
             __tablename__ = 'test'
@@ -456,8 +457,8 @@ class SADatumTest(TestCase):
             )
         SADatum.cleanup()
 
-        SADatum = self.SADatum = newSADatum(self.metadata)
-        
+
+            
     # def testDefaultValueFunction(self):
     #     table = Table('Test', self.metadata,
     #         Column('id', Integer, primary_key=True),
@@ -472,6 +473,7 @@ class SADatumTest(TestCase):
     #     self.assertEqual(table, datum1._tableau_table)
     #     self.assertEqual('foo', datum1.field)
 
+  
 
 if __name__ == "__main__":
     from unittest import main
