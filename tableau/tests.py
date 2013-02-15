@@ -399,7 +399,7 @@ class SADatumTest(TestCase):
         self.assertEqual(Foo.__table__, datum._tableau_table)
         self.assertEqual('test', datum.field)
         self.assertEqual('test', datum.some_model_specific_method())
-        engine = create_engine('sqlite+pysqlite:///', echo=True)
+        engine = create_engine('sqlite+pysqlite:///', echo=False)
         session = sessionmaker(engine)()
         self.metadata.create_all(engine)
         session.add(datum)
@@ -430,7 +430,6 @@ class SADatumTest(TestCase):
         self.assertEqual(table, datum2._tableau_table)
         self.assertEqual('test', datum2.field)
 
-<<<<<<< HEAD
     def testReentrance(self):
         class Test(self.declarative_base):
             __tablename__ = 'Test'
@@ -445,16 +444,35 @@ class SADatumTest(TestCase):
 
         SADatum = self.SADatum = newSADatum(self.metadata)
 
-    def testDefaultValueFunction(self):
-        table = Table('Test', self.metadata,
-            Column('id', Integer, primary_key=True),
-            Column('field', String, default=lambda : 'foo', onupdate=lambda : "update")
-            )
-        SADatum = newSADatum(self.metadata)
+    def testTablenameAndClassnameIsNotSame(self):
+        class Test(self.declarative_base):
+            __tablename__ = 'test'
+            id = Column(Integer, primary_key=True)
+            field = Column(String)
+        SADatum = self.SADatum = newSADatum(self.metadata)
         datum1 = SADatum(
-            'Test',
+            'test',
             'id'
             )
-        self.assertEqual('Test', datum1._tableau_schema)
-        self.assertEqual(table, datum1._tableau_table)
-        self.assertEqual('foo', datum1.field)
+        SADatum.cleanup()
+
+        SADatum = self.SADatum = newSADatum(self.metadata)
+        
+    # def testDefaultValueFunction(self):
+    #     table = Table('Test', self.metadata,
+    #         Column('id', Integer, primary_key=True),
+    #         Column('field', String, default=lambda : 'foo', onupdate=lambda : "update")
+    #         )
+    #     SADatum = newSADatum(self.metadata)
+    #     datum1 = SADatum(
+    #         'Test',
+    #         'id'
+    #         )
+    #     self.assertEqual('Test', datum1._tableau_schema)
+    #     self.assertEqual(table, datum1._tableau_table)
+    #     self.assertEqual('foo', datum1.field)
+
+
+if __name__ == "__main__":
+    from unittest import main
+    main()
